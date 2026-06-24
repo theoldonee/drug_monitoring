@@ -125,6 +125,14 @@ export function AdminDashboardClient({ analytics, analyticsError, teamMembers: i
             <span className="text-xs font-semibold uppercase px-2.5 py-1 rounded-full bg-indigo-500/10 text-indigo-400 ring-1 ring-indigo-500/20">
               Admin
             </span>
+            <a
+              href="/review"
+              id="admin-to-counselor-btn"
+              className="flex items-center gap-1.5 text-xs font-semibold text-teal-400 hover:text-teal-350 transition-colors px-3 py-1.5 rounded-lg border border-teal-500/20 hover:border-teal-500/40 bg-teal-500/5 hover:bg-teal-500/10"
+            >
+              <Users className="h-3.5 w-3.5" />
+              Case Review Portal
+            </a>
             <form action={signOut}>
               <button
                 type="submit"

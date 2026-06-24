@@ -82,6 +82,16 @@ export function ReviewDashboardClient({ cases, error, userEmail, role }: Props) 
             <span className="text-xs font-semibold uppercase px-2.5 py-1 rounded-full bg-teal-500/10 text-teal-400 ring-1 ring-teal-500/20">
               {role === 'primary_admin' ? 'Admin' : 'Counselor'}
             </span>
+            {role === 'primary_admin' && (
+              <a
+                href="/admin"
+                id="counselor-to-admin-btn"
+                className="flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-350 transition-colors px-3 py-1.5 rounded-lg border border-indigo-500/20 hover:border-indigo-500/40 bg-indigo-500/5 hover:bg-indigo-500/10"
+              >
+                <Shield className="h-3.5 w-3.5" />
+                Admin Dashboard
+              </a>
+            )}
             <form action={signOut}>
               <button
                 type="submit"

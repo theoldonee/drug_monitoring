@@ -118,7 +118,14 @@ export default function HomePage() {
   };
 
   const handleSubmit = () => {
-    if (!file || description.length < 20) return;
+    if (
+      !file ||
+      description.length < 20 ||
+      selectedDrugs.length === 0 ||
+      lat === null ||
+      lng === null ||
+      !address
+    ) return;
 
     setStatusState('uploading');
     setUploadPercent(0);
@@ -183,7 +190,15 @@ export default function HomePage() {
     }, [] as any[]);
   };
 
-  const isSubmitDisabled = !file || description.length < 20 || statusState === 'uploading' || statusState === 'analysing';
+  const isSubmitDisabled =
+    !file ||
+    description.length < 20 ||
+    selectedDrugs.length === 0 ||
+    lat === null ||
+    lng === null ||
+    !address ||
+    statusState === 'uploading' ||
+    statusState === 'analysing';
 
   return (
     <div className="min-h-screen bg-zinc-950 font-sans text-zinc-200 py-12 px-6 flex flex-col items-center justify-center">
@@ -411,7 +426,7 @@ export default function HomePage() {
                 <span>
                   {selectedDrugs.length > 0
                     ? selectedDrugs.join(', ')
-                    : 'Select Drug(s) (optional)'}
+                    : 'Select Drug(s) (required)'}
                 </span>
                 <span className="text-zinc-500 text-xs">▼</span>
               </button>
@@ -464,7 +479,7 @@ export default function HomePage() {
 
             {/* 4. Incident Location (Map) */}
             <div className="space-y-2">
-              <label className="block text-sm font-semibold text-zinc-300">Incident Location (optional)</label>
+              <label className="block text-sm font-semibold text-zinc-300">Incident Location (required)</label>
               <div className="rounded-xl overflow-hidden border border-white/[0.08]">
                 <MapPicker onLocationSelect={handleLocationSelect} selectedLat={lat} selectedLng={lng} />
               </div>
