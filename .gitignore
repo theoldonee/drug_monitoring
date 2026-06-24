@@ -1,0 +1,97 @@
+# Created by venv; see https://docs.python.org/3/library/venv.html
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# ============================================
+# NEXT.JS SPECIFIC
+# ============================================
+# dependencies
+/next_server/node_modules
+/next_server/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+
+# testing
+/coverage
+
+# next.js
+/next_server/.next/
+/next_server/out/
+next-env.d.ts
+
+# production
+/build
+/out
+.next
+
+# ============================================
+# PYTHON & FLASK SPECIFIC
+# ============================================
+# Virtual environments
+/py_server/.venv
+/py_server/venv
+/py_server/env
+/py_server/ENV
+.venv
+venv/
+env/
+ENV/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Flask
+/py_server/instance/
+/py_server/.webassets-cache
+
+# ============================================
+# ENVIRONMENT & CONFIGURATION
+# ============================================
+# env files (can opt-in for committing if needed)
+.env
+.env.local
+.env.*.local
+.env*.local
+
+# ============================================
+# IDE & TOOLS
+# ============================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*.swn
+*~
+
+# ============================================
+# OS SPECIFIC
+# ============================================
+.DS_Store
+Thumbs.db
+.windows
+
+# ============================================
+# MISC
+# ============================================
+*.pem
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
