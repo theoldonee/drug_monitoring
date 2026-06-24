@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
+export type UserRole = 'primary_admin' | 'counselor' | 'user'
+
 /**
  * Get the current authenticated user. Returns null if not authenticated.
  * Uses supabase.auth.getUser() (not getSession) for security.
@@ -22,7 +24,7 @@ export async function getCurrentUser() {
 /**
  * Look up a user's role from the profiles table.
  */
-export async function getUserRole(userId: string): Promise<string | null> {
+export async function getUserRole(userId: string): Promise<UserRole | null> {
   const supabase = await createClient()
   const { data, error } = await supabase
     .from('profiles')
@@ -34,7 +36,7 @@ export async function getUserRole(userId: string): Promise<string | null> {
     return null
   }
 
-  return data.role as string
+  return data.role as UserRole
 }
 
 /**
@@ -45,23 +47,38 @@ export async function requireAuth() {
   const user = await getCurrentUser()
 
   if (!user) {
-    redirect('/auth/login')
+    redirect('/login')
   }
 
   return user
 }
 
 /**
- * Require the current user to be an authenticated admin.
- * Redirects to /login if not authenticated, or / if not admin.
+ * Require the current user to be an authenticated primary_admin.
+ * Redirects to /login if not authenticated, or / if not primary_admin.
  */
 export async function requireAdmin() {
   const user = await requireAuth()
   const role = await getUserRole(user.id)
 
-  if (role !== 'admin') {
+  if (role !== 'primary_admin') {
     redirect('/')
   }
 
-  return { user, role }
+  return { user, role: role as 'primary_admin' }
+}
+
+/**
+ * Require the current user to be either a counselor or primary_admin.
+ * Redirects to /login if not authenticated, or / if role is insufficient.
+ */
+export async function requireCounselorOrAdmin() {
+  const user = await requireAuth()
+  const role = await getUserRole(user.id)
+
+  if (role !== 'counselor' && role !== 'primary_admin') {
+    redirect('/')
+  }
+
+  return { user, role: role as 'counselor' | 'primary_admin' }
 }

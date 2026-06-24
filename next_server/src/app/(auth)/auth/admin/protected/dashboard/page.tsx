@@ -1,6 +1,6 @@
 import { requireAdmin } from '@/lib/auth'
 import { getAdmins, getMyProfile } from './actions'
-import { signOut } from '@/app/(auth)/auth/login/signout-action'
+import { signOut } from '@/app/login/actions'
 import { AddAdminForm } from './add-admin-form'
 import {
   Shield,

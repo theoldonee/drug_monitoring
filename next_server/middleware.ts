@@ -2,11 +2,11 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
-  const { supabaseResponse, user } = await updateSession(request)
+  const { supabaseResponse, user, role } = await updateSession(request)
 
   const { pathname } = request.nextUrl
 
-  // Protect /admin/* routes — require authenticated user
+  // ── /admin/* — require primary_admin ──
   if (pathname.startsWith('/admin')) {
     if (!user) {
       const loginUrl = request.nextUrl.clone()
@@ -14,13 +14,40 @@ export async function middleware(request: NextRequest) {
       loginUrl.searchParams.set('redirect', pathname)
       return NextResponse.redirect(loginUrl)
     }
+    if (role !== 'primary_admin') {
+      // Authenticated but not admin → send to root
+      const homeUrl = request.nextUrl.clone()
+      homeUrl.pathname = '/'
+      return NextResponse.redirect(homeUrl)
+    }
   }
 
-  // If an authenticated user visits /login, redirect to admin dashboard
+  // ── /review/* — require counselor or primary_admin ──
+  if (pathname.startsWith('/review')) {
+    if (!user) {
+      const loginUrl = request.nextUrl.clone()
+      loginUrl.pathname = '/login'
+      loginUrl.searchParams.set('redirect', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+    if (role !== 'counselor' && role !== 'primary_admin') {
+      const homeUrl = request.nextUrl.clone()
+      homeUrl.pathname = '/'
+      return NextResponse.redirect(homeUrl)
+    }
+  }
+
+  // ── /login — redirect already-authenticated users to their portal ──
   if (pathname === '/login' && user) {
-    const dashboardUrl = request.nextUrl.clone()
-    dashboardUrl.pathname = '/admin/dashboard'
-    return NextResponse.redirect(dashboardUrl)
+    const dest = request.nextUrl.clone()
+    if (role === 'primary_admin') {
+      dest.pathname = '/admin'
+    } else if (role === 'counselor') {
+      dest.pathname = '/review'
+    } else {
+      dest.pathname = '/'
+    }
+    return NextResponse.redirect(dest)
   }
 
   return supabaseResponse

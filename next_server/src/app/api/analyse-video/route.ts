@@ -1,63 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { supabaseService } from '@/utils/supabase/service';
 import { extractFrames } from '@/utils/video/extractFrames';
-
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
-const SYSTEM_PROMPT = `You are a drug safety analyst operating in Mauritius.
-Analyse the provided video frames carefully for behavioural, environmental,
-and verbal indicators of substance use, psychological distress,
-self-harm, or unsafe behaviour.
-
-Consider all available signals: body language, facial expressions,
-speech patterns, environment, objects visible, and overall context.
-The video may contain English, French, or Mauritian Kreol — analyse all equally.
-
-Return ONLY a valid JSON object. No markdown, no code blocks, no explanation outside JSON.
-Use this exact schema:
-
-{
-  "scene_summary": "string — what is happening across the video frames",
-  "sentiment": {
-    "tone": "string — overall emotional tone",
-    "urgency_level": "low | medium | high | critical",
-    "emotional_indicators": ["array of observed emotional signals"]
-  },
-  "risk_assessment": {
-    "risk_level": "LOW | MEDIUM | HIGH | CRITICAL",
-    "risk_score": "integer 0-100",
-    "identified_concerns": ["array of specific concerns observed"],
-    "contributing_factors": ["array of factors that informed the risk score"]
-  },
-  "recommendations": ["array of actionable next steps, referencing NDEA Mauritius helpline 148 where appropriate"]
-}`;
-
-const SEVERITY_MAP: Record<string, string> = {
-  'LOW': 'Low',
-  'MEDIUM': 'Medium',
-  'HIGH': 'High',
-  'CRITICAL': 'High',
-};
-
-interface OpenRouterReport {
-  scene_summary: string;
-  sentiment: {
-    tone: string;
-    urgency_level: 'low' | 'medium' | 'high' | 'critical';
-    emotional_indicators: string[];
-  };
-  risk_assessment: {
-    risk_level: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-    risk_score: number | string;
-    identified_concerns: string[];
-    contributing_factors: string[];
-  };
-  recommendations: string[];
-}
 
 export async function POST(request: Request) {
   const openRouterApiKey = process.env.OPENROUTER_API_KEY;
@@ -75,12 +18,45 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const file = formData.get('video') as File | null;
     const durationStr = formData.get('duration') as string | null;
+    const incidentDescription = formData.get('incident_description') as string | null;
+    const reportedDrugsStr = formData.get('reported_drugs') as string | null;
+    const drugSeverityTier = formData.get('drug_severity_tier') as string | null;
+    const locationLatStr = formData.get('location_lat') as string | null;
+    const locationLngStr = formData.get('location_lng') as string | null;
+    const locationAddress = formData.get('location_address') as string | null;
+
+    // 1. Validations
+    if (!incidentDescription || incidentDescription.length < 20) {
+      return NextResponse.json(
+        { error: 'Incident description must be present and at least 20 characters.' },
+        { status: 400 }
+      );
+    }
+
+    if (!reportedDrugsStr) {
+      return NextResponse.json(
+        { error: 'Reported drugs must be provided.' },
+        { status: 400 }
+      );
+    }
+
+    let reportedDrugs: string[];
+    try {
+      reportedDrugs = JSON.parse(reportedDrugsStr);
+      if (!Array.isArray(reportedDrugs)) {
+        throw new Error('Reported drugs is not an array.');
+      }
+    } catch (err) {
+      return NextResponse.json(
+        { error: 'Reported drugs must be a valid JSON array.' },
+        { status: 400 }
+      );
+    }
 
     if (!file) {
       return NextResponse.json({ error: 'No video file provided.' }, { status: 400 });
     }
 
-    // 1. Validate file type and size
     const validExtensions = ['mp4', 'mov', 'webm'];
     const extension = file.name.split('.').pop()?.toLowerCase() || '';
     const fileMimeType = file.type || '';
@@ -93,19 +69,21 @@ export async function POST(request: Request) {
 
     if (!isValidType) {
       return NextResponse.json(
-        { error: 'Invalid file type. Only MP4, MOV, and WEBM are allowed.' },
+        { error: 'Invalid video file type. Only MP4, MOV, and WEBM are allowed.' },
         { status: 400 }
       );
     }
 
     if (file.size > 100 * 1024 * 1024) {
       return NextResponse.json(
-        { error: 'File size exceeds the 100MB limit.' },
+        { error: 'Video file size exceeds the 100MB limit.' },
         { status: 400 }
       );
     }
 
     const duration = parseInt(durationStr || '', 10) || 0;
+    const locationLat = locationLatStr ? parseFloat(locationLatStr) : null;
+    const locationLng = locationLngStr ? parseFloat(locationLngStr) : null;
 
     // Convert file to Buffer in-memory
     const arrayBuffer = await file.arrayBuffer();
@@ -121,7 +99,47 @@ export async function POST(request: Request) {
       );
     }
 
-    // 3. Call OpenRouter endpoint
+    // 3. Construct System Prompt with injected witness context
+    const systemPrompt = `You are a drug safety analyst operating in Mauritius.
+You have been provided with both an incident report from a witness and video frames 
+from the scene.
+
+== INCIDENT REPORT ==
+Description: ${incidentDescription}
+Location: ${locationAddress ?? 'Not provided'} ${locationLat !== null && locationLng !== null ? `(${locationLat}, ${locationLng})` : ''}
+Reported drug(s) involved: ${reportedDrugs.join(', ') || 'None specified'}
+Drug severity tier: ${drugSeverityTier || 'NONE'}
+
+== INSTRUCTIONS ==
+Analyse the attached video frames for additional behavioural, environmental, and 
+visual signals. Cross-reference what you observe in the video with the incident 
+report provided. If the video contradicts the report, note the discrepancy in 
+your response. Calibrate your risk score using BOTH the reported context AND 
+visual evidence. The higher the drug severity tier and the more distressing the 
+visual evidence, the higher the risk score should be.
+
+The video or report may contain English, French, or Mauritian Kreol — analyse all equally.
+
+Return ONLY a valid JSON object. No markdown, no code blocks, no preamble.
+Use this exact schema:
+{
+  "scene_summary": "string",
+  "sentiment": {
+    "tone": "string",
+    "urgency_level": "low | medium | high | critical",
+    "emotional_indicators": []
+  },
+  "risk_assessment": {
+    "risk_level": "LOW | MEDIUM | HIGH | CRITICAL",
+    "risk_score": 0,
+    "identified_concerns": [],
+    "contributing_factors": []
+  },
+  "recommendations": []
+}`;
+
+    // 4. Call OpenRouter endpoint
+    const startTime = Date.now();
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -135,7 +153,7 @@ export async function POST(request: Request) {
         messages: [
           {
             role: 'system',
-            content: SYSTEM_PROMPT,
+            content: systemPrompt,
           },
           {
             role: 'user',
@@ -157,11 +175,12 @@ export async function POST(request: Request) {
       }),
     });
 
+    const processingTimeMs = Date.now() - startTime;
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`OpenRouter API error (status ${response.status}):`, errorText);
       
-      // Clearly log rate limit or other API failures
       if (response.status === 429) {
         return NextResponse.json(
           { error: 'OpenRouter rate limit exceeded. Please try again later.' },
@@ -185,7 +204,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // 4. JSON parsing safety: Strip ```json or ``` wrappers
+    // 5. JSON parsing safety: Strip ```json or ``` wrappers
     let cleanText = rawContent.trim();
     if (cleanText.startsWith('```')) {
       cleanText = cleanText
@@ -195,9 +214,9 @@ export async function POST(request: Request) {
         .trim();
     }
 
-    let parsedReport: OpenRouterReport;
+    let parsedReport: any;
     try {
-      parsedReport = JSON.parse(cleanText) as OpenRouterReport;
+      parsedReport = JSON.parse(cleanText);
     } catch (parseError) {
       console.error('Failed to parse OpenRouter response as JSON:', parseError);
       console.error('Raw content was:', rawContent);
@@ -210,72 +229,85 @@ export async function POST(request: Request) {
       );
     }
 
-    // 5. Save report to Supabase `reports` table
-    const supabase = await createClient();
+    // 6. DB writes: Sequential insertions using Supabase SERVICE ROLE client
 
-    // Query the max ID to assign newId manually to avoid primary key duplicate violations
-    const { data: maxRows, error: maxError } = await supabase
+    // Step 1: Insert into reports table
+    const { data: maxReports, error: maxRepError } = await supabaseService
       .from('reports')
       .select('id')
       .order('id', { ascending: false })
       .limit(1);
 
-    if (maxError) {
-      console.error('Error fetching max report ID from Supabase:', maxError);
+    if (maxRepError) {
+      console.error('Error fetching max report ID from Supabase:', maxRepError);
     }
+    const nextReportId = maxReports && maxReports.length > 0 ? Number(maxReports[0].id) + 1 : 1;
 
-    const nextId = maxRows && maxRows.length > 0 ? Number(maxRows[0].id) + 1 : 1;
-
-    // Create a beautiful structured markdown summary that embeds the JSON block
-    const aiSuggestionText = `
-Scene Summary:
-${parsedReport.scene_summary}
-
-Sentiment Tone:
-${parsedReport.sentiment.tone} (Urgency: ${parsedReport.sentiment.urgency_level})
-Emotional Indicators: ${parsedReport.sentiment.emotional_indicators.join(', ')}
-
-Risk Assessment:
-Level: ${parsedReport.risk_assessment.risk_level} (Score: ${parsedReport.risk_assessment.risk_score})
-Concerns Identified: ${parsedReport.risk_assessment.identified_concerns.join(', ')}
-Contributing Factors: ${parsedReport.risk_assessment.contributing_factors.join(', ')}
-
-Recommendations:
-${parsedReport.recommendations.map((r) => `- ${r}`).join('\n')}
-
-[JSON_DATA]
-${JSON.stringify({
-  scene_summary: parsedReport.scene_summary,
-  sentiment: parsedReport.sentiment,
-  risk_assessment: parsedReport.risk_assessment,
-  recommendations: parsedReport.recommendations,
-  raw_response: rawContent,
-  video_duration: duration,
-  status: 'PENDING_REVIEW',
-})}
-`.trim();
-
-    const severityValue = SEVERITY_MAP[parsedReport.risk_assessment.risk_level] || 'Low';
-
-    const { error: insertError } = await supabase.from('reports').insert([
+    const { error: reportInsertError } = await supabaseService.from('reports').insert([
       {
-        id: nextId,
-        category: 'Unverified',
-        video_id: duration, // saving duration in video_id as it is a bigint field
-        ai_suggestion: aiSuggestionText,
-        severity: severityValue,
+        id: nextReportId,
+        incident_description: incidentDescription,
+        reported_drugs: reportedDrugs,
+        drug_severity_tier: drugSeverityTier || 'NONE',
+        location_lat: locationLat,
+        location_lng: locationLng,
+        location_address: locationAddress,
+        video_duration: duration,
+        status: 'PENDING_REVIEW',
       },
     ]);
 
-    if (insertError) {
-      console.error('Error inserting report to Supabase:', insertError);
-      // We still return the report to the client even if DB write fails, per user requirement
+    if (reportInsertError) {
+      console.error('Failed to insert report into Supabase reports table:', reportInsertError);
+      throw new Error(`Database error (reports): ${reportInsertError.message}`);
     }
 
-    // 6. Return response
+    // Step 2: Insert into ai_responses table using report_id
+    const { data: maxResponses, error: maxResError } = await supabaseService
+      .from('ai_responses')
+      .select('id')
+      .order('id', { ascending: false })
+      .limit(1);
+
+    if (maxResError) {
+      console.error('Error fetching max response ID from Supabase:', maxResError);
+    }
+    const nextResponseId = maxResponses && maxResponses.length > 0 ? Number(maxResponses[0].id) + 1 : 1;
+
+    const { error: responseInsertError } = await supabaseService.from('ai_responses').insert([
+      {
+        id: nextResponseId,
+        report_id: nextReportId,
+        scene_summary: parsedReport.scene_summary,
+        sentiment_tone: parsedReport.sentiment.tone,
+        urgency_level: parsedReport.sentiment.urgency_level,
+        emotional_indicators: parsedReport.sentiment.emotional_indicators,
+        risk_level: parsedReport.risk_assessment.risk_level,
+        risk_score: parsedReport.risk_assessment.risk_score,
+        identified_concerns: parsedReport.risk_assessment.identified_concerns,
+        contributing_factors: parsedReport.risk_assessment.contributing_factors,
+        recommendations: parsedReport.recommendations,
+        model_used: openRouterModel,
+        raw_response: rawContent,
+        processing_time_ms: processingTimeMs,
+      },
+    ]);
+
+    if (responseInsertError) {
+      console.error('Failed to insert response into Supabase ai_responses table:', responseInsertError);
+      throw new Error(`Database error (ai_responses): ${responseInsertError.message}`);
+    }
+
+    // 7. Return payload to client
     return NextResponse.json({
       success: true,
-      report: parsedReport,
+      report_id: nextReportId,
+      ai_response: {
+        scene_summary: parsedReport.scene_summary,
+        sentiment: parsedReport.sentiment,
+        risk_assessment: parsedReport.risk_assessment,
+        recommendations: parsedReport.recommendations,
+      },
     });
 
   } catch (error: any) {

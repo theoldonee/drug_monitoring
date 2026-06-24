@@ -45,7 +45,7 @@ export async function addAdmin(email: string, password: string) {
       .insert({
         id: userData.user.id,
         email: userData.user.email,
-        role: 'admin',
+        role: 'primary_admin',
       })
 
     if (profileError) {
@@ -75,7 +75,7 @@ export async function getAdmins() {
     const { data, error } = await adminSupabase
       .from('profiles')
       .select('id, email, role, created_at')
-      .eq('role', 'admin')
+      .eq('role', 'primary_admin')
       .order('created_at', { ascending: true })
 
     if (error) {
