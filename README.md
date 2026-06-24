@@ -127,13 +127,10 @@ graph TD
     J -->|Flag/Edit| L[Override Risk Level + Save Corrections]
 ```
 
-### 1. In-Memory Video Processing (Zero-Retention)
-Videos are uploaded directly into memory as buffers. SafeGuard MU uses static FFmpeg binaries to extract frames (up to 10 frames at 1fps) in a closed pipeline. The raw base64 JPEG strings are sent directly to the LLM endpoint and are immediately flushed from memory. No video is ever saved locally to the application server's storage disk, ensuring complete physical data protection.
-
-### 2. Calibrated Mauritian Prompt Engineering
+### 1. Calibrated Mauritian Prompt Engineering
 The system prompt injects contextual inputs provided by the witness (description, coordinates, reported drugs) alongside the visual frames. It calibrates the risk score (0-100) based on localized parameters (e.g. tracking specific Mauritian synthetic drugs like "Chimik" or misuse of Tramadol) and outputs structured recommendation paths connecting the subject to the **National Drug Enforcement Agency (NDEA) Helpline 148**, Caritas Mauritius, and regional detox clinics.
 
-### 3. Ethical Stakeholder Communication & Compliance
+### 2. Ethical Stakeholder Communication & Compliance
 To abide by compliance guidelines like **GDPR** and **HIPAA**:
 * **Row-Level Security (RLS):** Supabase DB tables enforce strict policy mappings. Counselors can only read cases and add review notes. Only administrators can configure credentials or delete data.
 * **No Social Exposure:** Zero analytics metrics are exposed publicly. Video files are uploaded to secure Supabase storage buckets, accessible only via transient authenticated URLs, and deleted automatically once review status progresses.
