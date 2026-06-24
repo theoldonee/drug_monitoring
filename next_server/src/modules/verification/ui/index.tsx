@@ -1,6 +1,6 @@
 "use client";
 
-import { createClient } from "@/lib/superbase/client";
+import { createClient } from "@/lib/supabase/client";
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import {
   Card,

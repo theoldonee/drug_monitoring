@@ -1,6 +1,6 @@
 'use client';
 import { Button } from "@/components/ui/button";
-import { createClient } from "@/lib/superbase/client";
+import { createClient } from "@/lib/supabase/client";
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from "react";
 
