@@ -34,5 +34,5 @@ export async function login(email: string, password: string) {
     }
   }
 
-  redirect('/admin/dashboard')
+  redirect('/auth/admin/protected/dashboard')
 }
