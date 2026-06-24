@@ -1,5 +1,6 @@
 "use client";
 
+import { redirect } from 'next/navigation'
 import { createClient } from "@/lib/supabase/client";
 import { useCategoryStore } from "@/stores/useCategoryStore";
 import {
@@ -17,7 +18,7 @@ import {
 import { useEffect, useState } from "react";
 
 const ticketSeverity = ["High", "Medium", "Low"];
-const tabCategories = ["Unverified", "Verified"];
+const tabCategories = ["Pending Review", "Reviewed"];
 
 export function TicketTab(){
 
@@ -59,7 +60,7 @@ function TabCategory(){
         setCategory(tabCategories[0]);
     }, []);
     
-    const [data, setData] =  useState<Array<{ id: any; category?: string }>>([]);
+    const [data, setData] =  useState<Array<{ report_id: any;  }>>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -70,10 +71,10 @@ function TabCategory(){
             
             const supabase = await createClient();
             const { data: reports, error } = await supabase
-                .from("reports")
-                .select("id")
-                .eq("severity", severity)
-                .eq("category", category);
+                .from("ai_responses")
+                .select("report_id, reports!inner(status)")
+                .eq("urgency_level", severity.toLowerCase())
+                .eq("reports.status", category.replace(" ", "_").toUpperCase());
             
             console.log("Query params:", { severity, category });
             console.log("Reports data:", reports);
@@ -84,6 +85,10 @@ function TabCategory(){
 
         fetchData();
     }, [category, severity]);
+
+    function OpenTicket(ticketId: number){
+        redirect(`/auth/admin/verification/${ticketId}`);
+    }
 
     return(
         <Tabs value={category} onValueChange={setCategory} className="w-full h-full">
@@ -102,18 +107,18 @@ function TabCategory(){
                             <CardHeader>
                                 <CardDescription>
                                     {
-                                        (tabCategory == "Unverified")? "Unverified reports" : "Verified reports"
+                                        (tabCategory == "Pending Review")? "Unverified reports" : "Verified reports"
                                     }
                                 </CardDescription>
                             </CardHeader>
 
-                            <CardContent className="text-sm text-muted-foreground">
+                            <CardContent className="text-sm text-muted-foreground flex flex-col gap-4">
                                 {data.length > 0 ? (
                                     data.map((item) => (
-                                        <Card key={item.id}>
+                                        <Card key={item.report_id} className="cursor-pointer hover:scale-[1.01]" onClick={() => { OpenTicket(item.report_id)}}>
                                             <CardContent className="text-sm text-muted-foreground">
                                                 <div>
-                                                    Ticket ID: {item.id}
+                                                    Ticket ID: {item.report_id}
                                                 </div>
                                             </CardContent>
                                         </Card>

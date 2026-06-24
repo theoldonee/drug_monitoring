@@ -31,16 +31,16 @@ export function ReviewPage(){
             console.log("Fetching report with ID:", params.id);
             
             const supabase = await createClient();
-            const { data: reports, error } = await supabase
-                .from("reports")
-                .select("*")
+            const { data: report, error } = await supabase
+                .from("ai_responses")
+                .select("raw_response")
                 .eq("id", params.id);
 
             if (error) {
                 console.error("Query error:", error);
-            } else if (reports && reports.length > 0) {
-                console.log("Report found:", reports[0]);
-                setData(reports[0]);
+            } else if (report && report.length > 0) {
+                console.log("Report found:", report[0]);
+                setData(JSON.parse(report[0]));
             } else {
                 console.log("No reports found with ID:", params.id);
             }
