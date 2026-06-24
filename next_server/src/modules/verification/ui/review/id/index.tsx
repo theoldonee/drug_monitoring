@@ -40,7 +40,7 @@ export function ReviewPage(){
                 console.error("Query error:", error);
             } else if (report && report.length > 0) {
                 console.log("Report found:", report[0]);
-                setData(JSON.parse(report[0]));
+                setData(JSON.parse(report[0].raw_response));
             } else {
                 console.log("No reports found with ID:", params.id);
             }
