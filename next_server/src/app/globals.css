@@ -4,11 +4,70 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ── SafeGuard MU Design Tokens ── */
+:root {
+  /* Core palette */
+  --sg-slate: #0C1117;
+  --sg-surface: #141B24;
+  --sg-surface-raised: #1A2332;
+  --sg-line: rgba(255, 255, 255, 0.06);
+  --sg-line-strong: rgba(255, 255, 255, 0.12);
+  --sg-lagoon: #2DD4A8;
+  --sg-lagoon-dim: rgba(45, 212, 168, 0.12);
+  --sg-lagoon-glow: rgba(45, 212, 168, 0.25);
+  --sg-coral: #F0564A;
+  --sg-coral-dim: rgba(240, 86, 74, 0.12);
+  --sg-coral-glow: rgba(240, 86, 74, 0.25);
+  --sg-mist: #94A3B8;
+  --sg-mist-dim: #64748B;
+  --sg-amber: #F59E0B;
+  --sg-amber-dim: rgba(245, 158, 11, 0.12);
+  --sg-orange: #F97316;
+
+  /* Typography */
+  --font-sans: var(--font-sg-sans), "DM Sans", system-ui, sans-serif;
+  --font-mono: var(--font-sg-mono), "IBM Plex Mono", monospace;
+
+  /* shadcn overrides — dark by default */
+  --background: #0C1117;
+  --foreground: #E2E8F0;
+  --card: #141B24;
+  --card-foreground: #E2E8F0;
+  --popover: #141B24;
+  --popover-foreground: #E2E8F0;
+  --primary: #2DD4A8;
+  --primary-foreground: #0C1117;
+  --secondary: #1A2332;
+  --secondary-foreground: #E2E8F0;
+  --muted: #1A2332;
+  --muted-foreground: #94A3B8;
+  --accent: #1A2332;
+  --accent-foreground: #E2E8F0;
+  --destructive: #F0564A;
+  --border: rgba(255, 255, 255, 0.06);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: #2DD4A8;
+  --chart-1: #2DD4A8;
+  --chart-2: #F0564A;
+  --chart-3: #F59E0B;
+  --chart-4: #94A3B8;
+  --chart-5: #6366F1;
+  --radius: 0.625rem;
+  --sidebar: #141B24;
+  --sidebar-foreground: #E2E8F0;
+  --sidebar-primary: #2DD4A8;
+  --sidebar-primary-foreground: #0C1117;
+  --sidebar-accent: #1A2332;
+  --sidebar-accent-foreground: #E2E8F0;
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-ring: #2DD4A8;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-mono: var(--font-mono);
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -48,83 +107,185 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
-
+/* ── Base Layer ── */
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    background: var(--sg-slate);
+    color: var(--foreground);
+    font-family: var(--font-sans);
   }
   html {
-    @apply font-sans;
+    font-family: var(--font-sans);
   }
+}
+
+/* ── Intro Animation Keyframes ── */
+@keyframes sg-intro-bg {
+  0% { opacity: 1; background: var(--sg-slate); }
+  20% { background: radial-gradient(ellipse at 50% 40%, #0F1922 0%, var(--sg-slate) 70%); }
+  100% { background: radial-gradient(ellipse at 50% 40%, #0F1922 0%, var(--sg-slate) 70%); opacity: 1; }
+}
+
+@keyframes sg-intro-icon {
+  0% { opacity: 0; transform: scale(0.7); }
+  15% { opacity: 1; transform: scale(1); }
+  30% { transform: scale(1.08); }
+  45% { transform: scale(1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes sg-intro-title {
+  0%, 25% { opacity: 0; letter-spacing: 0.5em; }
+  50% { opacity: 1; letter-spacing: 0.3em; }
+  100% { opacity: 1; letter-spacing: 0.3em; }
+}
+
+@keyframes sg-intro-tagline {
+  0%, 50% { opacity: 0; transform: translateY(8px); }
+  75% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes sg-intro-skip {
+  0% { opacity: 0; }
+  15% { opacity: 0.5; }
+  100% { opacity: 0.5; }
+}
+
+@keyframes sg-intro-fadeout {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes sg-intro-line {
+  0%, 30% { width: 0; opacity: 0; }
+  60% { width: 80px; opacity: 1; }
+  100% { width: 80px; opacity: 1; }
+}
+
+/* ── Risk Gauge Styles ── */
+.sg-gauge-wrap {
+  position: relative;
+  width: 200px;
+  height: 110px;
+  overflow: hidden;
+}
+
+.sg-gauge-arc {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  position: relative;
+  background: var(--sg-surface);
+}
+
+.sg-gauge-arc::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  mask: radial-gradient(farthest-side, transparent calc(100% - 14px), #000 calc(100% - 14px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 14px), #000 calc(100% - 14px));
+  transition: background 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.sg-gauge-track {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(
+    from 180deg,
+    var(--sg-surface-raised) 0deg,
+    var(--sg-surface-raised) 180deg,
+    transparent 180deg
+  );
+  mask: radial-gradient(farthest-side, transparent calc(100% - 14px), #000 calc(100% - 14px));
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 14px), #000 calc(100% - 14px));
+}
+
+.sg-gauge-value {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  text-align: center;
+}
+
+@keyframes sg-gauge-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--sg-coral-glow); }
+  50% { box-shadow: 0 0 20px 4px var(--sg-coral-glow); }
+}
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .sg-intro-overlay {
+    display: none !important;
+  }
+}
+
+/* ── Utility Classes ── */
+.sg-card {
+  background: var(--sg-surface);
+  border: 1px solid var(--sg-line);
+  border-radius: 12px;
+}
+
+.sg-card-raised {
+  background: var(--sg-surface-raised);
+  border: 1px solid var(--sg-line);
+  border-radius: 8px;
+}
+
+.sg-input {
+  background: var(--sg-slate);
+  border: 1px solid var(--sg-line-strong);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #E2E8F0;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.sg-input:focus {
+  border-color: var(--sg-lagoon);
+  box-shadow: 0 0 0 2px var(--sg-lagoon-dim);
+}
+
+.sg-input::placeholder {
+  color: var(--sg-mist-dim);
+}
+
+.sg-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sg-mist);
+  letter-spacing: 0.02em;
+}
+
+.sg-mono {
+  font-family: var(--font-mono);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--sg-slate);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--sg-line-strong);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--sg-mist-dim);
 }
