@@ -212,7 +212,7 @@ export default function HomePage() {
       <div className="min-h-screen py-12 px-6 flex flex-col items-center justify-center" style={{ background: 'var(--sg-slate)' }}>
         <div className="w-full max-w-2xl sg-card shadow-2xl shadow-black/30 overflow-hidden">
           {/* Header */}
-          <header className="border-b border-[var(--sg-line)] p-6 flex items-center justify-between">
+          <header className="border-b border-[var(--sg-line)] p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--sg-lagoon-dim)] ring-1 ring-[var(--sg-lagoon)]/30">
                 <Shield className="h-4.5 w-4.5 text-[var(--sg-lagoon)]" />
@@ -224,9 +224,9 @@ export default function HomePage() {
                 <p className="text-xs text-[var(--sg-mist-dim)]">{t('nav.tagline')}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
               <LanguageSwitcher />
-              <span className="hidden sm:inline-flex text-xs font-semibold uppercase px-2.5 py-1 rounded-full bg-[var(--sg-surface-raised)] text-[var(--sg-mist-dim)] ring-1 ring-[var(--sg-line)]">
+              <span className="hidden md:inline-flex text-xs font-semibold uppercase px-2.5 py-1 rounded-full bg-[var(--sg-surface-raised)] text-[var(--sg-mist-dim)] ring-1 ring-[var(--sg-line)]">
                 {t('nav.secure')}
               </span>
               <Link

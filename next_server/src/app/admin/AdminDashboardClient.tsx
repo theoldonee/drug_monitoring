@@ -105,7 +105,7 @@ export function AdminDashboardClient({ analytics, analyticsError, teamMembers: i
     <div className="min-h-screen bg-[var(--sg-slate)] text-[var(--sg-mist)]">
       {/* Top bar */}
       <header className="sticky top-0 z-40 border-b border-[var(--sg-line)] bg-[var(--sg-slate)]/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 sm:px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--sg-lagoon-dim)] ring-1 ring-[var(--sg-lagoon)]/30">
               <Shield className="h-4.5 w-4.5 text-[var(--sg-lagoon)]" />
@@ -117,7 +117,7 @@ export function AdminDashboardClient({ analytics, analyticsError, teamMembers: i
               <p className="text-xs text-[var(--sg-mist-dim)]">{t('admin.subtitle')}</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 w-full md:w-auto justify-between md:justify-end">
             <span className="hidden sm:inline text-xs text-[var(--sg-mist-dim)]">{userEmail}</span>
             <span className="text-xs font-semibold uppercase px-2.5 py-1 rounded-full bg-[var(--sg-lagoon-dim)] text-[var(--sg-lagoon)] ring-1 ring-[var(--sg-lagoon)]/20">
               {t('nav.admin')}

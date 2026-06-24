@@ -75,7 +75,7 @@ function LoginContent() {
       />
 
       {/* Header bar controls */}
-      <div className="absolute top-6 left-6 right-6 z-20 flex justify-between items-center">
+      <div className="absolute top-4 sm:top-6 left-4 sm:left-6 right-4 sm:right-6 z-20 flex justify-between items-center">
         <Link
           href="/"
           className="flex items-center gap-1 text-sm text-[var(--sg-mist-dim)] hover:text-[var(--sg-mist)] transition-colors"

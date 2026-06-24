@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { create } from 'zustand';
 
 export type Lang = 'en' | 'fr' | 'kr';
 
@@ -494,12 +495,23 @@ function getTranslator(lang: Lang) {
   };
 }
 
+interface LanguageState {
+  lang: Lang;
+  setLang: (lang: Lang) => void;
+}
+
+const useLanguageStore = create<LanguageState>((set) => ({
+  lang: 'en',
+  setLang: (lang) => set({ lang }),
+}));
+
 /**
  * React hook for language state.
  * Reads from localStorage on mount, defaults to 'en'.
  */
 export function useLanguage() {
-  const [lang, setLangState] = useState<Lang>('en');
+  const lang = useLanguageStore((state) => state.lang);
+  const setLangState = useLanguageStore((state) => state.setLang);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -508,12 +520,12 @@ export function useLanguage() {
       setLangState(stored);
     }
     setMounted(true);
-  }, []);
+  }, [setLangState]);
 
   const setLang = useCallback((newLang: Lang) => {
     setLangState(newLang);
     localStorage.setItem(STORAGE_KEY, newLang);
-  }, []);
+  }, [setLangState]);
 
   const t = useCallback(
     (key: string, params?: Record<string, string | number>) => getTranslator(lang)(key, params),
