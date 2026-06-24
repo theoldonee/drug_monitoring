@@ -318,6 +318,16 @@ export function ReviewDashboardClient({ cases, error, userEmail, role }: Props) 
                               </ul>
                             </div>
                           )}
+
+                          <div className="mt-5 pt-4 border-t border-white/[0.04] flex justify-end">
+                            <a
+                              href={`/review/${c.id}`}
+                              className="inline-flex items-center gap-1.5 text-xs font-medium text-teal-400 hover:text-teal-300 transition-colors px-3 py-1.5 rounded-lg border border-teal-500/20 hover:border-teal-500/40 bg-teal-500/5 hover:bg-teal-500/10"
+                            >
+                              <FileText className="h-3.5 w-3.5" />
+                              Review &amp; Edit Case
+                            </a>
+                          </div>
                         </div>
                       </>
                     )}

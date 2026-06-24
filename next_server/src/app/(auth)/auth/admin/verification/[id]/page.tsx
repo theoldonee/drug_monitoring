@@ -1,7 +1,5 @@
-import { ReviewPage } from "@/modules/verification/ui/review/id";
+import { redirect } from 'next/navigation';
 
-export default function TicketReviewPage(){
-    return(
-        <ReviewPage />
-    )
+export default function TicketReviewPage({ params }: { params: { id: string } }){
+    redirect(`/review/${params.id}`);
 }

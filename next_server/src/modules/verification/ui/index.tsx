@@ -87,7 +87,7 @@ function TabCategory(){
     }, [category, severity]);
 
     function OpenTicket(ticketId: number){
-        redirect(`/auth/admin/verification/${ticketId}`);
+        redirect(`/review/${ticketId}`);
     }
 
     return(

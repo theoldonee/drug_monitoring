@@ -231,7 +231,7 @@ Use this exact schema:
 
     // 6. DB writes: Sequential insertions using Supabase SERVICE ROLE client
 
-    // Step 1: Insert into reports table
+    // Step 1: Get next ID and insert into reports table
     const { data: maxReports, error: maxRepError } = await supabaseService
       .from('reports')
       .select('id')
@@ -242,6 +242,35 @@ Use this exact schema:
       console.error('Error fetching max report ID from Supabase:', maxRepError);
     }
     const nextReportId = maxReports && maxReports.length > 0 ? Number(maxReports[0].id) + 1 : 1;
+
+    // Step 1.5: Upload video file to Supabase Storage bucket 'videos'
+    const fileExtension = file.name.split('.').pop()?.toLowerCase() || 'mp4';
+    const videoFileName = `${nextReportId}-${Date.now()}.${fileExtension}`;
+    let videoUrl = null;
+
+    try {
+      const { data: uploadData, error: uploadError } = await supabaseService
+        .storage
+        .from('videos')
+        .upload(videoFileName, buffer, {
+          contentType: file.type || 'video/mp4',
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        console.error('Failed to upload video to Supabase Storage:', uploadError);
+      } else {
+        const { data: { publicUrl } } = supabaseService
+          .storage
+          .from('videos')
+          .getPublicUrl(videoFileName);
+        videoUrl = publicUrl;
+        console.log('Video uploaded to Supabase Storage successfully. URL:', videoUrl);
+      }
+    } catch (uploadException) {
+      console.error('Exception during video upload to Supabase Storage:', uploadException);
+    }
 
     const { error: reportInsertError } = await supabaseService.from('reports').insert([
       {
@@ -254,6 +283,7 @@ Use this exact schema:
         location_address: locationAddress,
         video_duration: duration,
         status: 'PENDING_REVIEW',
+        video_url: videoUrl,
       },
     ]);
 

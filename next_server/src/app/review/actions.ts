@@ -1,6 +1,9 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { requireCounselorOrAdmin } from '@/lib/auth'
+import { createAdminClient } from '@/lib/supabase/admin'
+
 
 export interface CaseReport {
   id: number
@@ -89,3 +92,85 @@ export async function fetchCaseReports(): Promise<{ data: CaseReport[]; error: s
 
   return { data: caseReports, error: null }
 }
+
+export async function updateCaseReport(
+  reportId: number,
+  reportUpdates: {
+    incident_description?: string
+    reported_drugs?: string[]
+    drug_severity_tier?: string
+    location_address?: string | null
+    status?: string
+  },
+  aiUpdates: {
+    scene_summary?: string | null
+    sentiment_tone?: string | null
+    urgency_level?: string | null
+    emotional_indicators?: string[] | null
+    risk_level?: string | null
+    risk_score?: number | null
+    identified_concerns?: string[] | null
+    contributing_factors?: string[] | null
+    recommendations?: string[] | null
+  }
+): Promise<{ success: boolean; error: string | null }> {
+  // 1. Guard against non-staff
+  try {
+    await requireCounselorOrAdmin()
+  } catch (err) {
+    return { success: false, error: 'Unauthorized' }
+  }
+
+  const adminClient = createAdminClient()
+
+  // 2. Update reports table
+  const { error: reportError } = await adminClient
+    .from('reports')
+    .update(reportUpdates)
+    .eq('id', reportId)
+
+  if (reportError) {
+    return { success: false, error: `Failed to update report: ${reportError.message}` }
+  }
+
+  // 3. Update ai_responses table (or upsert if it doesn't exist)
+  const { data: existingAi, error: fetchAiError } = await adminClient
+    .from('ai_responses')
+    .select('id')
+    .eq('report_id', reportId)
+    .maybeSingle()
+
+  if (existingAi) {
+    const { error: aiError } = await adminClient
+      .from('ai_responses')
+      .update(aiUpdates)
+      .eq('report_id', reportId)
+
+    if (aiError) {
+      return { success: false, error: `Failed to update AI response: ${aiError.message}` }
+    }
+  } else {
+    // Get max ID
+    const { data: maxResponses } = await adminClient
+      .from('ai_responses')
+      .select('id')
+      .order('id', { ascending: false })
+      .limit(1)
+    const nextResponseId = maxResponses && maxResponses.length > 0 ? Number(maxResponses[0].id) + 1 : 1
+
+    const { error: aiError } = await adminClient
+      .from('ai_responses')
+      .insert({
+        id: nextResponseId,
+        report_id: reportId,
+        ...aiUpdates,
+      })
+
+    if (aiError) {
+      return { success: false, error: `Failed to insert AI response: ${aiError.message}` }
+    }
+  }
+
+  return { success: true, error: null }
+}
+
