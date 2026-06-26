@@ -164,7 +164,7 @@ Get the development server up and running on your local machine:
 
 ### 1. Clone and Navigate to the Repository
 ```bash
-git clone https://github.com/your-group/drug_monitoring.git
+git clone https://github.com/theoldonee/drug_monitoring.git
 cd drug_monitoring/next_server
 ```
 
